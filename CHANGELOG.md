@@ -2,6 +2,14 @@
 
 All notable changes to **ComfyUI-BFSNodes** are documented in this file.
 
+## [1.123.0] - 2026-11-15
+
+### Added
+- **BFS Image Shot Planner (H3 Image)**: the Shot Planner for still images. Every input image (a batch, or a list of different sizes) is one shot with its own prompt (`global_prompt`, `---`-separated `shot_prompts`, or a connected `prompts` list) and its own references from a pool (`ref_assign`, one line per image). The image is `<Picture 1>` and its references follow, as MiniMax H3 Image expects. `run` picks images, `size_mode` native / megapixels / source size / custom, per-image seeds, and `{details}` / `{details2}` / `{image}` / `{details@Picture n}` described by an optional Qwen3-VL. Outputs the shots as a list, so the rest of the graph runs once per image.
+- **BFS Image Shot H3 Image Conditioning**: native MiniMax H3 Image (or p-h3-image) conditioning for one image shot, with optional prompt override and an extra picture.
+- **BFS Image Shot Unpack / Repack / Join**: plain values of a shot; edited pieces back into it; the results in one batch (pad / crop / stretch), with the originals, an original | result comparison and the list at each image's own size.
+- Example: `examples/h3_image_shot_planner.api.json`.
+
 ## [1.122.0] - 2026-11-14
 
 ### Changed

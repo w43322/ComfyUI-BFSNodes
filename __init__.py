@@ -232,7 +232,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
 for _mod in ("bfs_keyframe_marks", "bfs_video_segment_picker", "bfs_h3_swap_conditioning", "bfs_keyframe_planner",
              "bfs_frame_loop", "bfs_xy_sweep", "bfs_workflow_loop", "bfs_h3_image_swap_prompt",
              "bfs_h3_image_swap_conditioning", "bfs_h3_image_swap_tools", "bfs_model_surgery",
-             "bfs_h3_pdd_surgery"):
+             "bfs_h3_pdd_surgery", "bfs_image_shot_planner"):
     try:
         import importlib as _il
         _m = _il.import_module(f".{_mod}", __package__)
