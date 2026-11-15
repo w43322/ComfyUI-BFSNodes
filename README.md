@@ -196,7 +196,7 @@ BFS Image Planner (H3 Image) ─plan─► BFS Image Planner H3 Conditioning ─
 Workflows: [`examples/minimax_h3_image_character_swap_workflow_v1.1.json`](examples/minimax_h3_image_character_swap_workflow_v1.1.json)
 is the [MiniMax H3 character swap workflow v1.1](https://huggingface.co/Alissonerdx/Minimax-H3-ComfyUI/blob/main/workflows/minimax_h3_character_swap_workflow_v1.1.json)
 for one image, edited in place: every node that is not video-only keeps its id, place, settings and bypass state
-(the character swap LoRA, sampler, seed, attention patches, BiRefNet reference cleanup, BFS Video Compare, the bypassed second pass).
+(the character swap LoRA, sampler, seed, attention patches, BiRefNet reference cleanup, BFS Video Compare).
 Changed: the H3 Image model and VAE, the Turbo and Upscale LoRAs (removed), Shot Planner / Conditioning / Join -> Image Planner / its Conditioning / Paste
 Back, the audio and AV latent nodes (removed), the video outputs (-> Save Image), the second pass Add Guide (-> Add
 Guide for MiniMax H3 Image), the sigma shift at 1.0 / 1.0 (the image model's own), and the prompts and notes
