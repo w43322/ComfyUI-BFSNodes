@@ -198,8 +198,8 @@ is the [MiniMax H3 character swap workflow v1.1](https://huggingface.co/Alissone
 for one image, edited in place: every node that is not video-only keeps its id, place, settings and bypass state
 (the character swap LoRA, sampler, seed, attention patches, BiRefNet reference cleanup, BFS Video Compare).
 Changed: the H3 Image model and VAE, the Turbo and Upscale LoRAs (removed), Shot Planner / Conditioning / Join -> Image Planner / its Conditioning / Paste
-Back, the audio and AV latent nodes (removed), the video outputs (-> Save Image), the second pass Add Guide (-> Add
-Guide for MiniMax H3 Image), the sigma shift at 1.0 / 1.0 (the image model's own), and the prompts and notes
+Back, the audio and AV latent nodes (removed), the video outputs (-> Save Image), 6 steps (H3 Image is
+distilled to 6), the second pass (upscale) removed, the sigma shift at 1.0 / 1.0 (the image model's own), and the prompts and notes
 (<Picture 1> is now the image);
 [`examples/h3_image_planner.api.json`](examples/h3_image_planner.api.json) is a minimal API graph (replace the model,
 encoder, VAE and image names). Requires **ComfyUI 0.45.0+** with the H3 Image model, its image VAE and text encoder.

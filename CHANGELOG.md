@@ -11,7 +11,7 @@ All notable changes to **ComfyUI-BFSNodes** are documented in this file.
 - `refBox` / `promptChips` (panel helpers) take a picture-number offset; the Shot Planner is unchanged.
 - **BFS Image Planner Paste Back** `original` output: the original at the result's size.
 - **BFS Image Planner H3 Conditioning** `references` input: replaces the planner's references (a list or batch), e.g. after background removal.
-- Workflows: `examples/minimax_h3_image_character_swap_workflow_v1.1.json` (the video character swap workflow v1.1 for one image with MiniMax H3 Image: only the video-only nodes changed, and only the character swap LoRA kept) and `examples/h3_image_planner.api.json`.
+- Workflows: `examples/minimax_h3_image_character_swap_workflow_v1.1.json` (the video character swap workflow v1.1 for one image with MiniMax H3 Image: only the video-only nodes changed, only the character swap LoRA kept, 6 steps, no upscale pass) and `examples/h3_image_planner.api.json`.
 
 ## [1.122.0] - 2026-11-14
 
