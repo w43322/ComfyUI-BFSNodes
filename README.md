@@ -193,8 +193,12 @@ BFS Image Planner (H3 Image) ─plan─► BFS Image Planner H3 Conditioning ─
   (plus the new subject's outline found by SAM 3) onto the original, with edge hardness, colour match and seamless
   clone; other modes pass the result through. Also outputs *original | result*.
 
-Example: [`examples/h3_image_planner.api.json`](examples/h3_image_planner.api.json) (replace the model, encoder,
-VAE and image names). Requires **ComfyUI 0.45.0+** with the H3 Image model, its image VAE and text encoder.
+Workflows: [`examples/minimax_h3_image_character_swap_workflow_v1.1.json`](examples/minimax_h3_image_character_swap_workflow_v1.1.json)
+is the [MiniMax H3 character swap workflow v1.1](https://huggingface.co/Alissonerdx/Minimax-H3-ComfyUI/blob/main/workflows/minimax_h3_character_swap_workflow_v1.1.json)
+for one image (same loaders, prompt enhancer, BiRefNet reference cleanup and default prompts; the H3 Image model, VAE
+and the official 6-step / CFG 1 sampler instead of the video model, LoRAs, shot loop and video outputs);
+[`examples/h3_image_planner.api.json`](examples/h3_image_planner.api.json) is a minimal API graph (replace the model,
+encoder, VAE and image names). Requires **ComfyUI 0.45.0+** with the H3 Image model, its image VAE and text encoder.
 
 ## H3 Duet / Side Panel (1.50.0)
 

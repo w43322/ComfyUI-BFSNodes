@@ -166,6 +166,24 @@ class PlanTest(unittest.TestCase):
         self.assertEqual(tuple(pb[1].shape), (1, 1024, 2752, 3))
 
 
+class ReferencesInputTest(unittest.TestCase):
+    def test_connected_references_replace_the_plans(self):
+        r = M.make_plan(plan(), src_image())
+        old = M.condition
+        seen = {}
+        M.condition = lambda *a, **k: seen.update(k) or (None, None, "", None)
+        try:
+            M.BFSImagePlannerH3Conditioning().run([None], [None], [r], ["off"], ["off"], [1.0], ["SAM 3.1"], ["blur"],
+                                                 references=[torch.full((1, 8, 8, 3), .3), torch.full((2, 8, 8, 3), .4)])
+        finally:
+            M.condition = old
+        self.assertEqual([round(float(x.mean()), 1) for x in seen["references"]], [.3, .4, .4])
+        FakeNode.got = None
+        M.condition(None, FakeVae(), r, inpaint="off", node=FakeNode, references=[torch.full((1, 8, 8, 3), .9)])
+        self.assertEqual(round(float(FakeNode.got["images"]["image_2"].mean()), 1), .9)
+        self.assertEqual(len(FakeNode.got["images"]), 2)
+
+
 SL = sys.modules["bfs_shot_loop"]
 
 if __name__ == "__main__":

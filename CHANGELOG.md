@@ -9,7 +9,8 @@ All notable changes to **ComfyUI-BFSNodes** are documented in this file.
 - **BFS Image Planner H3 Conditioning**: native H3 Image conditioning from the plan, with the marks painted on `<Picture 1>`, optional source blur, and *only the mask* as an image latent with a noise mask.
 - **BFS Image Planner Paste Back**: puts crops back into the full image and pastes *Frame + paste* results onto the original (edge hardness, colour match, seamless clone), with an original | result comparison.
 - `refBox` / `promptChips` (panel helpers) take a picture-number offset; the Shot Planner is unchanged.
-- Example: `examples/h3_image_planner.api.json`.
+- **BFS Image Planner H3 Conditioning** `references` input: replaces the planner's references (a list or batch), e.g. after background removal.
+- Workflows: `examples/minimax_h3_image_character_swap_workflow_v1.1.json` (the video character swap workflow v1.1 for one image with MiniMax H3 Image) and `examples/h3_image_planner.api.json`.
 
 ## [1.122.0] - 2026-11-14
 

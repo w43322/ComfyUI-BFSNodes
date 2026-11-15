@@ -537,10 +537,14 @@ def image_inpaint_latent(latent: dict, vae, image: torch.Tensor, mask: torch.Ten
 
 def condition(clip, vae, r: dict, inpaint: str = INPAINT_MODES[0], prompt: str | None = None, normals=None,
               source_blur: str = "off", blur_strength: float = 1.0, blur_segmenter: str = "SAM 3.1",
-              blur_effect: str = "blur", node=None):
+              blur_effect: str = "blur", node=None, references: list | None = None):
     log = f"{TAG} conditioning"
     g = guide_image(r, normals, source_blur, blur_strength, blur_segmenter, blur_effect, log)
-    pictures = [g] + list(r.get("refs") or [])
+    refs = list(r.get("refs") or []) if references is None else list(references)
+    if references is not None and len(refs) != len(r.get("refs") or []):
+        print(f"{log}: {len(refs)} connected reference(s) instead of the planner's {len(r.get('refs') or [])}: "
+              "the prompt's <Picture n> numbers follow the connected ones", flush=True)
+    pictures = [g] + refs
     if len(pictures) > MAX_PICTURES:
         raise ValueError(f"{log}: {len(pictures)} pictures; the model takes up to {MAX_PICTURES}")
     text = prompt if prompt is not None and str(prompt).strip() else r["prompt"]
@@ -584,6 +588,9 @@ class BFSImagePlannerH3Conditioning:
                 "source_blur_effect": (EFFECTS, {"default": EFFECTS[0]}),
             },
             "optional": {
+                "references": ("IMAGE", {"tooltip": "Optional: replaces the planner's references, in the same order "
+                                                    "(e.g. its refs output after background removal). A list or a "
+                                                    "batch; every picture is one <Picture n> from 2 on."}),
                 "prompt": ("STRING", {"forceInput": True, "tooltip": "Overrides the planner's final prompt."}),
                 "normals": ("IMAGE", {"tooltip": "MoGe normals of the planner's image output (Render MoGe Geometry, "
                                                  "normal_directx), for the Colored Mark 'normal map' style."}),
@@ -600,10 +607,20 @@ class BFSImagePlannerH3Conditioning:
                    "Colored Marks and source blur, the references, the prompt and the generation size; 'only the mask' "
                    "regenerates the selection only.")
 
+    # the references come as a list (one item per picture, e.g. after a per-picture background removal)
+    INPUT_IS_LIST = True
+
     def run(self, clip, vae, plan, inpaint, source_blur, source_blur_strength, source_blur_segmenter, source_blur_effect,
-            prompt=None, normals=None):
-        positive, latent, text, g = condition(clip, vae, plan, inpaint, prompt, normals, source_blur,
-                                              source_blur_strength, source_blur_segmenter, source_blur_effect)
+            references=None, prompt=None, normals=None):
+        one = lambda v, d=None: (v[0] if v else d) if isinstance(v, list) else (d if v is None else v)
+        refs = None
+        if references is not None:
+            refs = [x[i:i + 1] for x in (references if isinstance(references, list) else [references])
+                    if x is not None for i in range(x.shape[0])]
+        positive, latent, text, g = condition(one(clip), one(vae), one(plan), one(inpaint, INPAINT_MODES[0]), one(prompt),
+                                              one(normals), one(source_blur, "off"), float(one(source_blur_strength, 1.0)),
+                                              one(source_blur_segmenter, "SAM 3.1"), one(source_blur_effect, "blur"),
+                                              references=refs)
         return (positive, latent, text, g)
 
 
