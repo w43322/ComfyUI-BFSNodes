@@ -525,7 +525,8 @@ export const shotRefNames = (own, glob) => {
 // one slot per picture, then "+" (up to 12). Click: upload (the "+" takes several files at once); drop image files or a
 // recent thumbnail on a slot to replace it, anywhere else in the box to add them. `fallback`: the global pictures a
 // shot's empty slots use (shown faded). `extra(k, name)`: more controls under slot k.
-export function refBox(c, target, own, fallback = [], extra = () => null) {
+// offset: the number of pictures before these slots (the image planner's <Picture 1> is the image itself)
+export function refBox(c, target, own, fallback = [], extra = () => null, offset = 0) {
   const n = Math.max(own.length, fallback.length);
   const drop = k => ({ onDragover: e => e.preventDefault(),
                        onDrop: e => { e.preventDefault(); e.stopPropagation(); c.dropRefs(target, k, e); } });
@@ -534,10 +535,10 @@ export function refBox(c, target, own, fallback = [], extra = () => null) {
     const name = own[k] || "", via = name ? "" : fallback[k] || "";
     slots.push(h("div", { class: "rslot" }, [
       h("div", { class: "refslot", ...drop(k),
-        title: name ? `<Picture ${k + 1}>: ${name} (click to replace)` : via ? `<Picture ${k + 1}>: ${via} (global; click to use another picture in this shot)` : "click to upload",
+        title: name ? `<Picture ${k + 1 + offset}>: ${name} (click to replace)` : via ? `<Picture ${k + 1 + offset}>: ${via} (global; click to use another picture in this shot)` : "click to upload",
         onClick: () => c.uploadRef(target, k) },
-        name || via ? [h("img", { src: c.viewUrl(name || via), style: via ? "opacity:.45" : "" }), h("span", { class: "rnum" }, String(k + 1))]
-          : [`⬆ ${k + 1}`]),
+        name || via ? [h("img", { src: c.viewUrl(name || via), style: via ? "opacity:.45" : "" }), h("span", { class: "rnum" }, String(k + 1 + offset))]
+          : [`⬆ ${k + 1 + offset}`]),
       h("div", { class: "rbtns" }, [name ? h("button", { title: target === "global" || k >= fallback.length ? "remove this picture"
         : "remove (use the global picture)", onClick: () => c.setRef(target, k, "") }, "✕") : null]),
       extra(k, name || via),
@@ -552,7 +553,7 @@ export function refBox(c, target, own, fallback = [], extra = () => null) {
 }
 // chips under a prompt, one per picture: PictureN inserts <Picture N> at the cursor, 📝 inserts {details@Picture N}
 // (the description of that picture alone). The prompt box and its chips sit in one .pbox.
-export function promptChips(c, names, onSet) {
+export function promptChips(c, names, onSet, offset = 0, urlOf = null) {
   if (!names.length) return null;
   const insert = (e, tag) => {
     e.preventDefault();   // mousedown: the prompt keeps its focus and cursor
@@ -562,12 +563,12 @@ export function promptChips(c, names, onSet) {
     onSet(before + v.slice(b));
     requestAnimationFrame(() => { ta.focus(); ta.setSelectionRange(before.length, before.length); });
   };
-  return h("div", { class: "pchips" }, names.map((name, k) => h("span", { class: "pchip" }, [
+  return h("div", { class: "pchips" }, names.map((name, j) => { const k = j + offset; return h("span", { class: "pchip" }, [
     h("button", { class: "sm", title: `insert <Picture ${k + 1}> (${name})`, onMousedown: e => insert(e, `<Picture ${k + 1}>`) },
-      [h("img", { src: c.viewUrl(name) }), `Picture${k + 1}`]),
+      [h("img", { src: urlOf ? urlOf(name, j) : c.viewUrl(name) }), `Picture${k + 1}`]),
     h("button", { class: "sm", title: `insert {details@Picture ${k + 1}}: the description of this picture (📝 Describe refs, or the VLM at run time)`,
       onMousedown: e => insert(e, `{details@Picture ${k + 1}}`) }, "📝"),
-  ])));
+  ]); }));
 }
 
 // ---- Colored Mark: one color per picture (<Picture 1> first; the first seven are the colors of the first mark sets)

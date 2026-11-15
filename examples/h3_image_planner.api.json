@@ -1,0 +1,168 @@
+{
+  "1": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "YOUR_MINIMAX_H3_IMAGE_MODEL.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "2": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "YOUR_MINIMAX_H3_TEXT_ENCODER.safetensors",
+      "type": "minimax",
+      "device": "default"
+    }
+  },
+  "3": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "YOUR_MINIMAX_H3_IMAGE_VAE.safetensors"
+    }
+  },
+  "4": {
+    "class_type": "BFSImagePlanner",
+    "inputs": {
+      "plan": "{\"image\": \"YOUR_INPUT_IMAGE.png\", \"global_refs\": [\"YOUR_REFERENCE.png\"], \"global_prompt\": \"Replace {target} in <Picture 1> with the character from <Picture 2>. Keep the pose, expression, lighting, background and framing of <Picture 1>.\", \"mask\": {\"text\": \"person\"}, \"generation_size_mode\": \"native\"}",
+      "vlm": [
+        "2",
+        0
+      ]
+    }
+  },
+  "5": {
+    "class_type": "BFSImagePlannerH3Conditioning",
+    "inputs": {
+      "clip": [
+        "2",
+        0
+      ],
+      "vae": [
+        "3",
+        0
+      ],
+      "plan": [
+        "4",
+        0
+      ],
+      "inpaint": "per plan (panel)",
+      "source_blur": "off",
+      "source_blur_strength": 1.0,
+      "source_blur_segmenter": "SAM 3.1",
+      "source_blur_effect": "blur"
+    }
+  },
+  "6": {
+    "class_type": "BasicGuider",
+    "inputs": {
+      "model": [
+        "1",
+        0
+      ],
+      "conditioning": [
+        "5",
+        0
+      ]
+    }
+  },
+  "7": {
+    "class_type": "RandomNoise",
+    "inputs": {
+      "noise_seed": 42
+    }
+  },
+  "8": {
+    "class_type": "KSamplerSelect",
+    "inputs": {
+      "sampler_name": "euler"
+    }
+  },
+  "9": {
+    "class_type": "BasicScheduler",
+    "inputs": {
+      "model": [
+        "1",
+        0
+      ],
+      "scheduler": "simple",
+      "steps": 28,
+      "denoise": 1.0
+    }
+  },
+  "10": {
+    "class_type": "SamplerCustomAdvanced",
+    "inputs": {
+      "noise": [
+        "7",
+        0
+      ],
+      "guider": [
+        "6",
+        0
+      ],
+      "sampler": [
+        "8",
+        0
+      ],
+      "sigmas": [
+        "9",
+        0
+      ],
+      "latent_image": [
+        "5",
+        1
+      ]
+    }
+  },
+  "11": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "10",
+        0
+      ],
+      "vae": [
+        "3",
+        0
+      ]
+    }
+  },
+  "12": {
+    "class_type": "BFSImagePlannerPasteBack",
+    "inputs": {
+      "plan": [
+        "4",
+        0
+      ],
+      "image": [
+        "11",
+        0
+      ],
+      "new_outline": true,
+      "edge_hardness": 0.0,
+      "match_colors": 0.0,
+      "match_region": "around the subject (swap)",
+      "seamless": false
+    }
+  },
+  "13": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "12",
+        0
+      ],
+      "filename_prefix": "BFS_H3_ImagePlanner"
+    }
+  },
+  "14": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "12",
+        1
+      ],
+      "filename_prefix": "BFS_H3_ImagePlanner_compare"
+    }
+  }
+}

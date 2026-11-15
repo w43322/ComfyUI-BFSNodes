@@ -153,48 +153,48 @@ Shots can also be cropped to a **SAM 3 mask** (text or points per shot) and past
 from the previous shot's result, and get **VLM suggestions** (what to segment, a shot description for the
 prompt) from a Qwen3-VL connected to the planner. It works for people, objects and vehicles alike.
 
-## Image Shot Planner for MiniMax H3 Image (1.123.0)
+## Image Planner for MiniMax H3 Image (1.123.0)
 
-The Shot Planner for still images: connect images instead of a video, and every image becomes one shot with its own
-prompt and reference pictures. The shots come out as a ComfyUI list, so the conditioning, sampler and decode run once
-per image without any loop.
+The Shot Planner for **one still image**: the same kind of panel and the same per-shot tools, without anything that
+only exists for a video (timeline, cut detection, shots, continuity, audio, queue loop, stored shots, mask videos,
+tracking). Made for MiniMax H3 Image (and p-h3-image): the image is **`<Picture 1>`**, the picture the model edits,
+and the reference pictures follow as `<Picture 2>`, `<Picture 3>`...
 
 ```text
-Load Image(s) ─images─► BFS Image Shot Planner (H3 Image) ─shots─► BFS Image Shot H3 Image Conditioning
-reference images ─references─┘                    │ seeds          │ positive          │ latent
-                                                  ▼                ▼                   ▼
-                                              RandomNoise ─► BasicGuider ─► SamplerCustomAdvanced ─► VAE Decode
-                                                                                                        │ images
-                              Save Image ◄── BFS Image Shot Join (shots from the planner) ◄─────────────┘
+BFS Image Planner (H3 Image) ─plan─► BFS Image Planner H3 Conditioning ─positive─► BasicGuider ─► SamplerCustomAdvanced
+                  │                                                    └─latent──────────────────────┘        │
+                  └─plan──────────────► BFS Image Planner Paste Back ◄── image ── VAE Decode ◄───────────────┘
 ```
 
-- **BFS Image Shot Planner (H3 Image)** — `images` is a batch, or a list when the images have different sizes.
-  `references` is the reference pool (a batch or a list), numbered 1, 2, 3...
-  - **Prompts:** `global_prompt` for every image; `shot_prompts` holds an optional prompt per image, as blocks
-    separated by a line with only `---` (an empty block uses the global prompt); a connected `prompts` string list
-    takes precedence. Placeholders: `{index}`, `{count}`, `{name}`; with a Qwen3-VL on `vlm`, `{details}` /
-    `{details2}` (first / second reference), `{image}` (the image itself) and `{details@Picture n}` are described
-    automatically (`describe_preset`).
-  - **Pictures:** with `source_as_picture_1` on (default) the image is **`<Picture 1>`**, the picture H3 Image
-    edits, and its references are `<Picture 2>`, `<Picture 3>`... Off: text-to-image with the references only.
-    `ref_assign` has one line per image: `all`, `none`, or reference numbers in picture order (`2, 1` = `<Picture 2>`
-    is reference 2); an empty or missing line uses `default_refs`.
-  - **Which images / sizes / seeds:** `run` (`1-3, 5`, empty = all); `size_mode` *native* (what the native node picks:
-    H3 Image keeps the short edge between 1024 and 2048; p-h3-image fits 2912² of area), *megapixels*, *source size*
-    or *custom*, always on the 32 px grid; `seed_mode` *increment* (image k gets seed + k − 1) or *fixed*.
-  - Outputs `shots`, `images`, `prompts`, `seeds` and `refs` as lists, plus `count` and a readable `summary`.
-- **BFS Image Shot H3 Image Conditioning** — calls the native **MiniMax H3 Image Conditioning** (or **p-h3-image
-  Conditioning**, by the planner's `variant`) with the shot's pictures, prompt and size. Optional `prompt` override,
-  `extra_picture` (appended as the next `<Picture n>`, e.g. a marked guide) and width / height override. Outputs
-  `positive`, `latent`, the final `prompt` and the shot's `seed`.
-- **BFS Image Shot Unpack / Repack** — one shot as plain values (image, refs list, prompt, size, seed, index, name) for
-  any other image model, and edited pieces back into the shot.
-- **BFS Image Shot Join** — collects the decoded images into one batch (`fit`: pad / crop / stretch to the first or
-  largest size), with the `originals`, an *original | result* `comparison`, and `image_list` at each image's own size.
+- **BFS Image Planner (H3 Image)**: a panel with four tabs.
+  - **🖼 Image**: pick, upload or drop the image (a connected `image` input wins), the model (`variant`) and the
+    generation size: *native* (H3 Image keeps the short edge between 1024 and 2048; p-h3-image fits 2912² of area),
+    *megapixels*, *original* or *custom*.
+  - **📝 Pictures & prompt**: up to 99 reference pictures with their Colored Mark colors, the prompt with
+    `<Picture n>` / 📝 chips, recent pictures, **🤖 Auto prompt** (the VLM writes the H3 Image prompt from the image,
+    the pictures, the request, the marks and the mode; structured or short style, optional trigger prefix), the
+    **VLM** card (suggested selection, `{shot}` = the image's description) and **Describe pictures** (`{details}`,
+    per-picture presets, temperature and seed).
+  - **✏ Edit**: what changes: a SAM 3 selection (text, or points in the 🎯 window), 👁 preview, the **Generate** mode
+    (*Full frame*, *Frame + paste*, *Mask only*, *Crop*, *Crop + mask*) with mask strength and the new subject for
+    paste, **🎨 Colored Mark** (translucent, hatching + contour or normal map; one row per subject, each → a picture),
+    `{target}` (🧑 Describe: SAM 3 cutout + VLM) and the mask settings.
+  - **▶ Run**: checks before running and the second pass size.
+  - Placeholders: `{target}`, `{details}` / `{details2}` (first / second reference), `{details@Picture n}`,
+    `{image}` (the image), `{shot}`. With a Qwen3-VL on `vlm`, anything not written yet is described at run time and
+    stored back in the panel. The optional `mask` input replaces SAM 3.
+  - Outputs `plan`, `image` (`<Picture 1>` at the generation size, the crop in crop modes), `refs` (list),
+    `ref_count`, `prompt`, `width`, `height`, `mask`, `summary`, `second_pass`, `upscale_width`, `upscale_height`.
+- **BFS Image Planner H3 Conditioning**: the native **MiniMax H3 Image Conditioning** (or p-h3-image) with
+  `<Picture 1>` (its Colored Marks painted, optional **source blur**), the references, the prompt and the size.
+  `inpaint` = *per plan* follows the Generate mode; *only the mask* starts the latent from the image with a noise mask
+  (strength < 1 keeps some of the original). Optional `prompt` override and `normals` (MoGe, for the normal-map style).
+- **BFS Image Planner Paste Back**: crop modes go back into the full image, *Frame + paste* pastes only the subject
+  (plus the new subject's outline found by SAM 3) onto the original, with edge hardness, colour match and seamless
+  clone; other modes pass the result through. Also outputs *original | result*.
 
-Example: [`examples/h3_image_shot_planner.api.json`](examples/h3_image_shot_planner.api.json) (replace the model,
-encoder, VAE and image names with yours). Requires **ComfyUI 0.45.0+** with the H3 Image model, its image VAE and
-text encoder.
+Example: [`examples/h3_image_planner.api.json`](examples/h3_image_planner.api.json) (replace the model, encoder,
+VAE and image names). Requires **ComfyUI 0.45.0+** with the H3 Image model, its image VAE and text encoder.
 
 ## H3 Duet / Side Panel (1.50.0)
 
