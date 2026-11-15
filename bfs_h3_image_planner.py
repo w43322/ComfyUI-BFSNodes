@@ -675,10 +675,10 @@ class BFSImagePlannerPasteBack:
             },
         }
 
-    RETURN_TYPES = ("IMAGE", "IMAGE")
-    RETURN_NAMES = ("image", "comparison")
+    RETURN_TYPES = ("IMAGE", "IMAGE", "IMAGE")
+    RETURN_NAMES = ("image", "comparison", "original")
     OUTPUT_TOOLTIPS = ("The final image: pasted back in the crop and Frame + paste modes, else the result.",
-                       "Original | result, side by side.")
+                       "Original | result, side by side.", "The original at the result's size (e.g. for BFS Video Compare).")
     FUNCTION = "run"
     CATEGORY = "BFS/MiniMax H3"
 
@@ -687,7 +687,7 @@ class BFSImagePlannerPasteBack:
                            match_region=match_region, seamless=seamless)
         # a crop is pasted into the source image; every other mode stays at the generation size
         orig = resize(plan["source"] if plan.get("crop") else plan["image"], out.shape[2], out.shape[1])
-        return (out, torch.cat([orig, out], dim=2))
+        return (out, torch.cat([orig, out], dim=2), orig)
 
 
 # ---------------------------------------------------------------------------- panel routes

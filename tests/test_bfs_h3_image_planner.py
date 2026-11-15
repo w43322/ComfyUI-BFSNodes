@@ -164,6 +164,7 @@ class PlanTest(unittest.TestCase):
         pb = M.BFSImagePlannerPasteBack().run(out[0], torch.zeros(1, 1024, 1376, 3), False, 0.0, 0.0,
                                                SL.MATCH_REGIONS[0], False)
         self.assertEqual(tuple(pb[1].shape), (1, 1024, 2752, 3))
+        self.assertEqual(tuple(pb[2].shape), (1, 1024, 1376, 3))
 
 
 class ReferencesInputTest(unittest.TestCase):
